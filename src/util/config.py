@@ -3,7 +3,7 @@ from box import Box
 
 from src.util.postgres import create_connection
 
-PATH_TO_CONFIG_FILE = 'config.yml'
+PATH_TO_CONFIG_FILE = 'config.yaml'
 
 # Initialize connection settings
 CONFIG = Box.from_yaml(filename=PATH_TO_CONFIG_FILE)
