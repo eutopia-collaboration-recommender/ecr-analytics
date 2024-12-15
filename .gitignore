@@ -167,4 +167,4 @@ data/*
 
 log
 
-secrets
+config.yml
