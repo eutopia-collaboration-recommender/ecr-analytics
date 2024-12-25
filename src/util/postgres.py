@@ -29,15 +29,15 @@ def create_connection(username: str,
     return conn
 
 
-def query(conn: psycopg2.extensions.connection, query: str) -> pd.DataFrame:
+def query(conn: psycopg2.extensions.connection, query_str: str) -> pd.DataFrame:
     """
     Query Postgres.
     :param conn: Postgres connection
-    :param query: SQL query
+    :param query_str: SQL query
     :return: Pandas DataFrame with the data
     """
     # Fetch the data
-    df = pd.read_sql(query, conn)
+    df = pd.read_sql(query_str, conn)
     # Return the DataFrame
     return df
 

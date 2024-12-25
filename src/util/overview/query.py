@@ -10,18 +10,13 @@ def query_cards(settings: dict):
     """
 
     query_str = f"""
-        SELECT COUNT(DISTINCT article_sid)                                               AS articles,
-               COUNT(DISTINCT author_sid)                                                AS authors,
-               COUNT(DISTINCT CASE WHEN is_sole_author_publication THEN article_sid END) AS single_author_publications,
-               COUNT(DISTINCT CASE WHEN is_internal_collaboration THEN article_sid END)  AS internal_collaborations,
-               COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_sid END)  AS external_collaborations,
-               COUNT(DISTINCT CASE WHEN is_eutopian_collaboration THEN article_sid END)  AS eutopian_collaborations
-        FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
+    SELECT COUNT(DISTINCT article_id)                                                   AS articles,
+           COUNT(DISTINCT author_id)                                                    AS authors,
+           COUNT(DISTINCT CASE WHEN is_single_author_collaboration THEN article_id END) AS single_author_publications,
+           COUNT(DISTINCT CASE WHEN is_internal_collaboration THEN article_id END)      AS internal_collaborations,
+           COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END)      AS external_collaborations,
+           COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END)       AS eutopian_collaborations
+    FROM fct_collaboration
     """
 
     # Fetch the data
@@ -41,14 +36,9 @@ def query_trend_eutopia_collaboration(settings: dict):
     """
 
     query_str = f"""
-        SELECT DATE_PART('year', article_publication_dt::DATE)                          AS year,
-               COUNT(DISTINCT CASE WHEN is_eutopian_collaboration THEN article_sid END) AS eutopian_collaborations
+        SELECT DATE_PART('year', article_publication_dt)                              AS year,
+               COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END) AS eutopian_collaborations
         FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
         GROUP BY 1
         ORDER BY 1 ASC
     """
@@ -71,14 +61,9 @@ def query_breakdown_publications_by_institution(settings):
     """
 
     query_str = f"""
-        SELECT institution_sid             AS institution,
-               COUNT(DISTINCT article_sid) AS articles
+        SELECT institution_id              AS institution,
+               COUNT(DISTINCT article_id) AS articles
         FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
         GROUP BY 1
         ORDER BY 2 ASC
     """
@@ -101,16 +86,11 @@ def query_trend_articles_by_collaboration_type(settings):
     """
 
     query_str = f"""
-        SELECT DATE_PART('year', article_publication_dt::DATE)                           AS year,
-               COUNT(DISTINCT CASE WHEN is_internal_collaboration THEN article_sid END)  AS internal_collaborations,
-               COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_sid END)  AS external_collaborations,
-               COUNT(DISTINCT CASE WHEN is_sole_author_publication THEN article_sid END) AS single_author_publications
+        SELECT DATE_PART('year', article_publication_dt)                                    AS year,
+               COUNT(DISTINCT CASE WHEN is_internal_collaboration THEN article_id END)      AS internal_collaborations,
+               COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END)      AS external_collaborations,
+               COUNT(DISTINCT CASE WHEN is_single_author_collaboration THEN article_id END) AS single_author_publications
         FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
         GROUP BY 1
         ORDER BY 1 ASC
     """
@@ -133,48 +113,28 @@ def query_eutopia_collaboration_funnel(settings):
     """
 
     query_str = f"""
-        SELECT 'Total Articles'            AS stage
-             , 1                           AS stage_index
-             , COUNT(DISTINCT article_sid) AS count
+         SELECT 'Total Articles'           AS stage
+             , 1                          AS stage_index
+             , COUNT(DISTINCT article_id) AS count
         FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
         GROUP BY 1, 2
         UNION ALL
-        SELECT 'Collaborations'                                                                                      AS stage
-             , 2                                                                                                     AS stage_index
-             , COUNT(DISTINCT CASE WHEN is_external_collaboration or is_internal_collaboration THEN article_sid END) AS count
-        FROM FCT_COLLABORATION
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
+        SELECT 'Collaborations'                                                                                     AS stage
+             , 2                                                                                                    AS stage_index
+             , COUNT(DISTINCT CASE WHEN is_external_collaboration or is_internal_collaboration THEN article_id END) AS count
+        FROM fct_collaboration
         GROUP BY 1, 2
         UNION ALL
-        SELECT 'External Collaborations'                                                AS stage
-             , 3                                                                        AS stage_index
-             , COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_sid END) AS count
-        FROM FCT_COLLABORATION
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
+        SELECT 'External Collaborations'                                               AS stage
+             , 3                                                                       AS stage_index
+             , COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END) AS count
+        FROM fct_collaboration
         GROUP BY 1, 2
         UNION ALL
-        SELECT 'Eutopia Collaborations'                                                 AS stage
-             , 4                                                                        AS stage_index
-             , COUNT(DISTINCT CASE WHEN is_eutopian_collaboration THEN article_sid END) AS count
-        FROM FCT_COLLABORATION
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
+        SELECT 'Eutopia Collaborations'                                               AS stage
+             , 4                                                                      AS stage_index
+             , COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END) AS count
+        FROM fct_collaboration
         GROUP BY 1, 2
     """
 
@@ -198,23 +158,19 @@ def query_trend_new_collaborations(settings):
     :return: The trend of new collaborations.
     """
 
-    query_str = f"""
-        SELECT DATE_PART('year', article_publication_dt::DATE)                                       AS year,
+    query_str = f"""        
+        SELECT DATE_PART('year', article_publication_dt)                                       AS year,
            COUNT(DISTINCT CASE
-                              WHEN is_new_author_collaboration
-                                  THEN article_sid END)                                          AS new_author_collaborations,
+                              WHEN has_new_author_collaboration
+                                  THEN article_id END)                                          AS new_author_collaborations,
            COUNT(DISTINCT CASE
-                              WHEN is_new_institution_collaboration
-                                  THEN article_sid END)                                          AS new_institution_collaborations,
+                              WHEN has_new_institution_collaboration
+                                  THEN article_id END)                                          AS new_institution_collaborations,
            COUNT(DISTINCT CASE
-                              WHEN NOT is_new_author_collaboration
-                                  AND NOT is_new_institution_collaboration THEN article_sid END) AS existing_collaborations
+                              WHEN NOT has_new_author_collaboration
+                                  AND NOT has_new_institution_collaboration THEN article_id END) AS existing_collaborations
         FROM fct_collaboration
-        WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-          AND institution_sid IS NOT NULL
-          AND institution_sid <> 'n/a'
-          AND is_eutopian_publication
-          AND is_article_relevant
+        WHERE NOT is_single_author_collaboration
         GROUP BY 1
         ORDER BY 1 ASC
     """
@@ -237,17 +193,12 @@ def query_collaboration_novelty_index_distribution(settings):
     """
 
     query_str = f"""
-        WITH ARTICLES AS (SELECT DISTINCT article_sid
-                          FROM fct_collaboration
-                          WHERE DATE_PART('year', article_publication_dt::DATE) >= 2000
-                            AND institution_sid IS NOT NULL
-                            AND institution_sid <> 'n/a'
-                            AND is_eutopian_publication
-                            AND is_article_relevant)
-        SELECT cn.article_sid,
+        WITH articles AS (SELECT DISTINCT article_id
+                          FROM fct_collaboration)
+        SELECT cn.article_id,
                cn.collaboration_novelty_index
-        FROM fct_collaboration_novelty cn
-                 INNER JOIN articles USING (article_sid)
+        FROM fct_article cn
+                 INNER JOIN articles USING (article_id)
     """
 
     # Fetch the data

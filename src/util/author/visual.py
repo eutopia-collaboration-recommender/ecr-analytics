@@ -27,15 +27,15 @@ def create_card(value: float,
 
 
 def cards_base_metrics(settings: dict,
-                       author_sid: str) -> list:
+                       author_id: str) -> list:
     """
     Get the base metrics for the overview page.
     :param settings: The settings for connection to Redis and BigQuery.
-    :param author_sid: The author SID.
+    :param author_id: The author SID.
     :return: The base metrics cards.
     """
     df_cards = query_cards(settings=settings,
-                           author_sid=author_sid)
+                           author_id=author_id)
 
     children = [dbc.Col(
         create_card(value=df_cards[col].values[0],
@@ -48,16 +48,16 @@ def cards_base_metrics(settings: dict,
 
 
 def published_articles(settings: dict,
-                       author_sid: str):
+                       author_id: str):
     """
     Get the published articles table.
     :param settings:
-    :param author_sid:
+    :param author_id:
     :return:
     """
 
     published_articles_df = query_published_articles(settings=settings,
-                                                     author_sid=author_sid)
+                                                     author_id=author_id)
 
     # Visualize a table visualization of articles grouped by PUBLICATION_YEAR
     published_articles_df['Article Title'] = published_articles_df.apply(

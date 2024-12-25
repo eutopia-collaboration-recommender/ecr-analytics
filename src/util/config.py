@@ -14,7 +14,7 @@ PG_CONNECTION = create_connection(
     host=CONFIG.POSTGRES.HOST,
     port=CONFIG.POSTGRES.PORT,
     database=CONFIG.POSTGRES.DATABASE,
-    schema=CONFIG.POSTGRES.BQ_SCHEMA
+    schema=CONFIG.POSTGRES.SCHEMA
 )
 
 # Initialize the settings

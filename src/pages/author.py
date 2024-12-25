@@ -60,13 +60,13 @@ def page_author_overview(filters: list) -> dbc.Container:
         )
 
     author = parse_filter(filters, filter_name='author')
-    author_sid = re.search(r'\(([^)]+)\)', author).group(1)
+    author_id = re.search(r'\(([^)]+)\)', author).group(1)
 
     return dbc.Container(children=[
         # Some space between the title and the cards
-        dbc.Row(children=cards_base_metrics(settings=GLOBAL_CONFIG, author_sid=author_sid),
+        dbc.Row(children=cards_base_metrics(settings=GLOBAL_CONFIG, author_id=author_id),
                 className="gray-background-custom m-1"),
-        dbc.Row(children=published_articles(settings=GLOBAL_CONFIG, author_sid=author_sid),
+        dbc.Row(children=published_articles(settings=GLOBAL_CONFIG, author_id=author_id),
                 className="gray-background-custom m-1"
                 )
     ],

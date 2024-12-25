@@ -32,7 +32,7 @@ def redis_query(settings: dict,
             # Otherwise, query Postgres
             results = query(
                 conn=settings['pg_connection'],
-                query=query_str
+                query_str=query_str
             )
 
             # Cache the result for future use
@@ -43,6 +43,6 @@ def redis_query(settings: dict,
             # Otherwise, query Postgres
             results = query(
                 conn=settings['pg_connection'],
-                query=query_str
+                query_str=query_str
             )
     return results
