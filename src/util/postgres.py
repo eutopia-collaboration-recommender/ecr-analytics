@@ -1,5 +1,7 @@
 import pandas as pd
 import psycopg2
+import sqlalchemy
+from sqlalchemy import create_engine
 
 
 def create_connection(username: str,
@@ -29,7 +31,34 @@ def create_connection(username: str,
     return conn
 
 
-def query(conn: psycopg2.extensions.connection, query_str: str) -> pd.DataFrame:
+def create_sqlalchemy_connection(username: str,
+                                 password: str,
+                                 host: str,
+                                 port: str,
+                                 database: str,
+                                 schema: str) -> sqlalchemy.engine.base.Connection:
+    """
+    Create a connection to Postgres using SQLAlchemy
+    :param username: Postgres username
+    :param password: Postgres password
+    :param host: Postgres host
+    :param port: Postgres port
+    :param database: Postgres database
+    :param schema: Postgres schema
+    :return: SQLAlchemy connection
+    """
+    # Define the connection string
+    conn_string = f'postgresql://{username}:{password}@{host}:{port}/{database}'
+    # Create the connection
+    engine = create_engine(
+        conn_string,
+        connect_args={'options': '-csearch_path={}'.format(schema)})
+    conn = engine.connect()
+    # Return the connection
+    return conn
+
+
+def query(conn: psycopg2.extensions.connection | sqlalchemy.engine.base.Connection, query_str: str) -> pd.DataFrame:
     """
     Query Postgres.
     :param conn: Postgres connection

@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+
 def column_coverage(series: pd.Series, default_value: object) -> float:
     """
     Calculate the coverage of a column in percentage.
@@ -12,11 +14,14 @@ def column_coverage(series: pd.Series, default_value: object) -> float:
     # of non-default values to the total number of values
 
     # If type of series is boolean then default value is False
-    if series.dtype == 'boolean':
+    if series.dtype == 'boolean' or series.dtype == 'bool':
         # If the series is of boolean type, count the True values
         coverage = series.sum() / series.shape[0] * 100
     else:
-        coverage = series[series != default_value].shape[0] / series.shape[0] * 100
+        if default_value is None:
+            coverage = series.dropna().shape[0] / series.shape[0] * 100
+        else:
+            coverage = series[series != default_value].shape[0] / series.shape[0] * 100
     return coverage
 
 
