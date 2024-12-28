@@ -146,3 +146,7 @@ docker exec -it eutopia-collaboration-recommender-system-eutopia_service_1-1 /bi
 [//]: # (docker exec -it eutopia_container_1 /bin/bash)
 
  chmod +x prod_update.sh
+ 
+
+jupyter notebook --no-browser --port 10000
+ssh -i ~/.ssh/ssh-eucollab -L 10000:localhost:10000 eucollab@193.2.72.43
