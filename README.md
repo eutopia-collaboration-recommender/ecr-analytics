@@ -1,10 +1,10 @@
-# EUTOPIA: Collaboration Recommender System
+# EUTOPIA Collaboration Recommender: Analytical Layer
 
-**Author:** *Luka Žontar*
+**Author:** [@lukazontar](https://github.com/lukazontar)
 
 <hr/>
 
-## Introduction
+## Project Introduction
 
 This repository contains the code for the EUTOPIA collaboration recommender system.
 
@@ -15,6 +15,15 @@ cooperation. It focuses on building a network from scientific co-authorships and
 collaborations. Emphasis is on improving the EUTOPIA organization by fostering valuable, interdisciplinary academic
 relationships.
 
+The system consist of three main components:
+
+1. **Luigi pipeline for data ingestion and
+   transformation**: [ecr-luigi :octocat:](https://github.com/eutopia-collaboration-recommender/ecr-luigi).
+2. **Analytical layer for gaining a deeper understanding of the
+   data**: [ecr-analytics :octocat:](https://github.com/eutopia-collaboration-recommender/ecr-analytics).
+3. **Recommender system for proposing new
+   collaborations**: [ecr-recommender :octocat:](https://github.com/eutopia-collaboration-recommender/ecr-recommender).
+
 <hr/>
 
 ## Setting up the environment
@@ -22,131 +31,66 @@ relationships.
 Environment stack:
 
 - Python, SQL as main programming languages.
-- [Mage AI](https://www.mage.ai/): an open-source data ingestion and transformation framework.
-    - Using a dockerized version with
-      docker-compose: [GitHub: mage-ai/compose-quickstart](https://docs.mage.ai/getting-started/setup).
-- [BigQuery](https://cloud.google.com/bigquery): as the main data storage and processing engine.
-- [dbt](https://www.getdbt.com/): as the main data transformation and modeling tool.
+- [PyMC](https://www.pymc.io/welcome.html) for Bayesian modeling. *Installed via conda*.
+- [Dash](https://dash.plotly.com/) for building the analytical dashboard. *Installed via pip*.
 
 ### Prerequisites
 
 - Docker
 - Python 3.10 (using [pyenv](https://github.com/pyenv-win/pyenv-win)
   and [venv](https://docs.python.org/3/library/venv.html))
-    - For PyMC you need to have a *conda* environment.
-- Accounts for: Google Cloud Platform, Mage AI, dbt Cloud
+- [Conda](https://anaconda.org/anaconda/conda) (for PyMC)
 
-To run Python scripts, you need to install the requirements:
+To run notebooks and the dashboard, you need to install the dependencies. Since we're using PyMC, you need to create
+and activate a Conda environment:
 
 ```bash
-pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate ecr-analytics-conda
 ```
 
-### Running Mage AI
+### Running the analytical dashboard
 
-To run Mage AI, you simply run the following command in the root of the repository:
+To run the analytical dashboard, you need to run the following command in the `src` directory:
+
+```bash
+python app.py
+```
+
+#### (optional) Caching the data using redis
+
+If you want to cache the data using Redis, you need to setup a Redis server. We've provided a `docker-compose.yaml` file
+for this purpose. You can run the following command to start the Redis server:
 
 ```bash
 docker-compose up
 ```
 
-After that you can access the Mage AI UI at [http://localhost:6789](http://localhost:6789).
-
-### Transforming data with dbt
-
-To run `dbt` you need to have the `dbt` CLI installed. You can install it with the following command:
-
-```bash
-pip install dbt
-pip install dbt-bigquery
-```
-
-After that you can execute the following command to run the models:
-
-```bash
-dbt run
-```
+This will store query results in Redis for 1 hour before fetching the data again, which results in faster loading times.
 
 <hr/>
 
-## Additional Docs
+## Notebooks
 
-Check additional documentation in the `docs` directory.
+We've provided a few Jupyter notebooks for data exploration, which can be found in the `notebooks` directory. The
+notebooks are thoroughly documented and provide insights into the data, which can be used for further analysis. Here's
+a brief overview of the notebooks:
 
-### Credentials
-
-[Credentials](docs/data/Credentials.md): how to set up credentials for the different services.
-
-### Data
-
-1. [BigQuery Setup](docs/data/01%20-%20BigQuery%20Setup.md): how to set up BigQuery.
-2. [Data Ingestion](docs/data/02%20-%20Data%20Ingestion.md): how to run data ingestion pipelines (both historical and
-   incremental).
-3. [Data Transformation](docs/data/03%20-%20Data%20Transformation.md): how to run data transformation pipelines
-   in `dbt`.
-
-### Development environment
-
-```bash
-conda env export --no-builds | findstr /V "^prefix: " > environment.yml
-```
-
-```bash
-pip list --format=freeze > prod_requirements.txt
-```
-
-Filter out only the essential packages in `prod_requirements.txt`.
-
-```bash
-docker build --no-cache --tag eutopia_image_1 .
-```
-
-```bash
-docker tag eutopia_image_1:latest lukazontar1/eutopia-recommender-system:version_1
-```
-
-```bash
-docker push lukazontar1/eutopia-recommender-system:version_1
-```
-
-### Production environment
-
-```bash
-gcloud compute ssh --ssh-key-file C:\Users\LukaŽontar\lukazontar-pvt-eutopia eutopia-1
-```
-
-```bash
-gcloud iam service-accounts keys create ./secrets/service_account_key.json --iam-account=eutopia-recommender-system@collaboration-recommender.iam.gserviceaccount.com
-```
-
-```bash
-docker-compose up -d
-```
-
-To execute the test script:
-
-```bash
-docker exec -it eutopia-collaboration-recommender-system-eutopia_service_1-1 /bin/bash -c "source venv/bin/activate && python scripts/embedding/embed_articles.py"
-```
-
-To connect to the container:
-
-```bash
-docker exec -it eutopia-collaboration-recommender-system-eutopia_service_1-1 /bin/bash
-```
-
-[//]: # (docker run -dit \)
-
-[//]: # (  -v ./secrets/service-account-key.json:~/service-account-key.json \)
-
-[//]: # (  -e GOOGLE_APPLICATION_CREDENTIALS=~/service-account-key.json \)
-
-[//]: # (  --name eutopia_container_1 eutopia_image_1)
-
-[//]: # (docker exec -it eutopia_container_1 /bin/bash)
-
- chmod +x prod_update.sh
- 
-
-jupyter notebook --no-browser --port 10000
-ssh -i ~/.ssh/ssh-eucollab -L 10000:localhost:10000 eucollab@193.2.72.43
+1. [Data coverage & quality](src/notebooks/01_data_coverage_and_quality.ipynb): an overview of the data coverage and
+   quality in our data warehouse.
+2. [Publication landscape](src/notebooks/02_publication_landscape.ipynb): an analysis of the publication landscape in
+   the EUTOPIA organization that gives us a general overview of the ingested data.
+3. [Occurrence of new collaborations](src/notebooks/03_occurrence_of_new_collaborations.ipynb): an analysis of the
+   occurence of new collaborations in the EUTOPIA organization including collaboration novelty index and distribution of
+   new collaborations over time.
+4. [Research topics - top N articles distribution](src/notebooks/04_research_topics_top_n_articles_distribution.ipynb):
+   an analysis of the distribution of top N articles for each research topic that are used for research area
+   classification.
+5. [New collaborations impact on author research direction](src/notebooks/05_new_collaborations_impact_on_author_research_direction.ipynb):
+   an analysis of the impact of new collaborations on author's research direction.
+6. [New collaborations are driven by research trends](src/notebooks/06_new_collaborations_are_driven_by_research_trends.ipynb):
+   an analysis testing whether new collaborations are driven by research trends.
+7. [New collaborations are driven by search for expertise](src/notebooks/07_new_collaborations_are_driven_by_search_for_expertise.ipynb):
+   an analysis testing whether new collaborations are driven by the search for expertise.
+8. [New collaborations are driven by experienced lead authors](src/notebooks/08_new_collaborations_are_driven_by_experienced_lead_authors.ipynb):
+   an analysis testing whether new collaborations are driven by experienced lead authors.
