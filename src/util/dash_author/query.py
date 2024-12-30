@@ -1,42 +1,16 @@
 import pandas as pd
 
-from src.util.common import cols_to_title
+from src.util.dash_common.app_config import AppConfig
+from src.util.dash_common.common import cols_to_title
 from src.util.redis import redis_query
 
 
-def filter_authors(settings: dict) -> pd.DataFrame:
-    """
-    Get the authors used for filtering.
-    :param settings: The settings including BigQuery client, Redis client and config file.
-    :return: The authors used for filtering.
-    """
-    query_str = f"""
-        SELECT CONCAT(a.author_name, ' (', a.author_id, ')') AS author,
-               COUNT(DISTINCT article_id)                    AS article_count
-        FROM fct_collaboration c
-                 INNER JOIN dim_author a
-                            ON c.author_id = a.author_id
-        WHERE c.institution_id = 'UNI_LJ'
-        GROUP BY author
-        HAVING COUNT(DISTINCT article_id) > 10
-        ORDER BY article_count DESC
-    """
-
-    # Fetch the data
-    data = redis_query(settings=settings,
-                       query_str=query_str)
-
-    # Turn column names from snake case to title case and replace underscores with spaces
-    data.columns = cols_to_title(data.columns)
-    return data
-
-
-def query_cards(settings: dict,
+def query_cards(app_config: AppConfig,
                 author_id: str) -> pd.DataFrame:
     """
-    Get the overview cards.
-    :param settings: The settings.
-    :return: The overview cards.
+    Get the dash_overview cards.
+    :param app_config: The app_config.
+    :return: The dash_overview cards.
     """
     query_str = f"""
         WITH df_publications AS (SELECT COUNT(DISTINCT article_id)                                                   AS articles,
@@ -65,7 +39,7 @@ def query_cards(settings: dict,
     """
 
     # Fetch the data
-    data = redis_query(settings=settings,
+    data = redis_query(app_config=app_config,
                        query_str=query_str)
 
     # Turn column names from snake case to title case and replace underscores with spaces
@@ -73,11 +47,11 @@ def query_cards(settings: dict,
     return data
 
 
-def query_published_articles(settings: dict,
+def query_published_articles(app_config: AppConfig,
                              author_id: str) -> pd.DataFrame:
     """
     Get the published articles.
-    :param settings: The settings.
+    :param app_config: The app_config.
     :return: The published articles.
     """
     query_str = f"""
@@ -96,7 +70,7 @@ def query_published_articles(settings: dict,
     """
 
     # Fetch the data
-    data = redis_query(settings=settings,
+    data = redis_query(app_config=app_config,
                        query_str=query_str)
 
     # Turn column names from snake case to title case and replace underscores with spaces

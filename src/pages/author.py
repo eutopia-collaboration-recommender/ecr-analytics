@@ -4,10 +4,10 @@ import dash_bootstrap_components as dbc
 
 from dash import ALL, callback, html, Input, Output
 
-from src.util.author.filter import filter_author
-from src.util.author.visual import cards_base_metrics, published_articles
-from src.util.config import GLOBAL_CONFIG
-from src.util.common import parse_filter
+from src.util.dash_common.filter import filter_author
+from src.util.dash_author.visual import cards_base_metrics, published_articles
+from src.util.dash_common.app_config import app_config
+from src.util.dash_common.common import parse_filter
 
 
 # -------------------- PAGE LAYOUT HELPERS --------------------
@@ -23,7 +23,7 @@ def page_header():
                 width=6
             ),
             dbc.Col(
-                filter_author(settings=GLOBAL_CONFIG),
+                filter_author(app_config=app_config, page_name='author'),
                 width=6
             )]
         )
@@ -34,12 +34,12 @@ def page_header():
 
 
 # -------------------- CALLBACKS --------------------
-@callback(Output('author-overview', 'children'),
-          Input({'type': 'filter-overview', 'index': ALL}, 'value'))
-def page_author_overview(filters: list) -> dbc.Container:
+@callback(Output('author-page', 'children'),
+          Input({'type': 'filter-author', 'index': ALL}, 'value'))
+def page_author(filters: list) -> dbc.Container:
     """
-    Get the layout for the author page.
-    :param settings: The settings for connection to Redis and BigQuery.
+    Get the layout for the dash_author page.
+    :param app_config: The app_config for connection to Redis and BigQuery.
     :param filters: The filters.
     :return: The layout.
     """
@@ -64,9 +64,9 @@ def page_author_overview(filters: list) -> dbc.Container:
 
     return dbc.Container(children=[
         # Some space between the title and the cards
-        dbc.Row(children=cards_base_metrics(settings=GLOBAL_CONFIG, author_id=author_id),
+        dbc.Row(children=cards_base_metrics(app_config=app_config, author_id=author_id),
                 className="gray-background-custom m-1"),
-        dbc.Row(children=published_articles(settings=GLOBAL_CONFIG, author_id=author_id),
+        dbc.Row(children=published_articles(app_config=app_config, author_id=author_id),
                 className="gray-background-custom m-1"
                 )
     ],
@@ -82,7 +82,7 @@ layout = dbc.Container(children=[
     page_header(),
     # Some space between the title and the cards
     dbc.Row(children=[],
-            id='author-overview')
+            id='author-page')
 ],
     fluid=True
 )

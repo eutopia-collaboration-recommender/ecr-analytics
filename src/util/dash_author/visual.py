@@ -1,12 +1,13 @@
 import dash_table
-from dash import dcc, html
+from dash import html
 
 import dash_bootstrap_components as dbc
 
-from src.util.author.query import (
+from src.util.dash_author.query import (
     query_cards,
     query_published_articles
 )
+from src.util.dash_common.app_config import AppConfig
 
 
 def create_card(value: float,
@@ -26,15 +27,15 @@ def create_card(value: float,
     )
 
 
-def cards_base_metrics(settings: dict,
+def cards_base_metrics(app_config: AppConfig,
                        author_id: str) -> list:
     """
-    Get the base metrics for the overview page.
-    :param settings: The settings for connection to Redis and BigQuery.
+    Get the base metrics for the dash_overview page.
+    :param app_config: The app_config for connection to Redis and BigQuery.
     :param author_id: The author SID.
     :return: The base metrics cards.
     """
-    df_cards = query_cards(settings=settings,
+    df_cards = query_cards(app_config=app_config,
                            author_id=author_id)
 
     children = [dbc.Col(
@@ -47,16 +48,16 @@ def cards_base_metrics(settings: dict,
     return children
 
 
-def published_articles(settings: dict,
+def published_articles(app_config: AppConfig,
                        author_id: str):
     """
     Get the published articles table.
-    :param settings:
+    :param app_config:
     :param author_id:
     :return:
     """
 
-    published_articles_df = query_published_articles(settings=settings,
+    published_articles_df = query_published_articles(app_config=app_config,
                                                      author_id=author_id)
 
     # Visualize a table visualization of articles grouped by PUBLICATION_YEAR
@@ -89,12 +90,12 @@ def published_articles(settings: dict,
             'maxWidth': '80%',
             'fontFamily': 'Open Sans, sans-serif',
             'whiteSpace': 'normal',
-            'backgroundColor': settings['config'].DASHBOARD.COLORS.BACKGROUND_COLOR,  # Set cell background color
+            'backgroundColor': app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,  # Set cell background color
             'border': '1px solid white',
             'padding': '5px 5px 5px 5px',
         },
         style_header={
-            'backgroundColor': settings['config'].DASHBOARD.COLORS.BACKGROUND_COLOR,
+            'backgroundColor': app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,
             'fontWeight': 'bold',
             'border': '1px solid white',
             'padding': '5px 5px 5px 5px',
