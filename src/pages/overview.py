@@ -69,7 +69,6 @@ def page_header():
 def page_overview(filters: list, filter_ids: int) -> list:
     # Get the filter values
     filter_scope = parse_filters(filters=filters, filter_ids=filter_ids)
-    print(filter_scope)
     return [
         # Some space between the title and the cards
         dbc.Row(children=cards_base_metrics(app_config=app_config, filter_scope=filter_scope),

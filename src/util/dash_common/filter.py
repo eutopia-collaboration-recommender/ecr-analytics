@@ -20,7 +20,7 @@ def filter_institution(app_config: AppConfig, page_name: str) -> dcc.Dropdown:
     """
 
     return get_dropdown_filter(app_config=app_config,
-                               filter_name='Institution',
+                               filter_name='Institution Id',
                                page_name=page_name,
                                query_filter_func=query_institutions)
 
@@ -37,6 +37,7 @@ def filter_author(app_config: AppConfig, page_name: str) -> dcc.Dropdown:
                                filter_name='Author',
                                page_name=page_name,
                                query_filter_func=query_authors,
+                               filter_value_name='Author Id',
                                select_first_by_default=True,
                                multi=False)
 
@@ -67,7 +68,7 @@ def filter_publication_date(page_name: str) -> dcc.RangeSlider:
     max_year = datetime.now().year
 
     return dcc.RangeSlider(
-        id={'type': f'filter-{page_name}', 'index': 'publication-date'},
+        id={'type': f'filter-{page_name}', 'index': 'article_publication_dt'},
         min=min_year,
         max=max_year,
         step=1,

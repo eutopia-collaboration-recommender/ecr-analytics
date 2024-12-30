@@ -36,7 +36,7 @@ def query_institutions(app_config: AppConfig) -> pd.DataFrame:
     """
 
     query_str = f"""
-        SELECT institution_id as institution
+        SELECT institution_id
         FROM dim_eutopia_institution
     """
 
@@ -58,12 +58,12 @@ def query_authors(app_config: AppConfig) -> pd.DataFrame:
     """
     query_str = f"""
         SELECT CONCAT(a.author_name, ' (', a.author_id, ')') AS author,
-               COUNT(DISTINCT article_id)                    AS article_count
+               COUNT(DISTINCT article_id)                    AS article_count,
+               a.author_id
         FROM fct_collaboration c
                  INNER JOIN dim_author a
                             ON c.author_id = a.author_id
-        WHERE c.institution_id = 'UNI_LJ'
-        GROUP BY author
+        GROUP BY author, a.author_id
         HAVING COUNT(DISTINCT article_id) > 10
         ORDER BY article_count DESC
     """

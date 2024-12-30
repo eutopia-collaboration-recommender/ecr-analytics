@@ -3,7 +3,7 @@ import logging
 import redis
 
 from box import Box
-from src.util.postgres import create_connection
+from src.util.postgres import create_connection, create_sqlalchemy_connection
 
 
 class AppConfig:
@@ -13,7 +13,7 @@ class AppConfig:
         # Initialize connection app_config
         self.config = Box.from_yaml(filename=self.path_to_config_file)
         self.redis_client = redis.StrictRedis.from_url(self.config.DASHBOARD.REDIS_URL)
-        self.pg_connection = create_connection(
+        self.pg_connection = create_sqlalchemy_connection(
             username=self.config.POSTGRES.USERNAME,
             password=self.config.POSTGRES.PASSWORD,
             host=self.config.POSTGRES.HOST,

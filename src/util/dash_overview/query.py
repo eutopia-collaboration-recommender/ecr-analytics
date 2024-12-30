@@ -20,8 +20,9 @@ def query_cards(app_config: AppConfig, filter_scope: dict) -> pd.DataFrame:
            COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END)      AS external_collaborations,
            COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END)       AS eutopian_collaborations
     FROM fct_collaboration
-    WHERE EXTRACT(YEAR FROM article_publication_dt) {filter_scope['publication-date']}
-    AND {'TRUE' if len(filter_scope['institution']) == 0 else f'institution_id IN ({", ".join(filter_scope["institution"])})'}
+    WHERE {filter_scope['article_publication_dt']}
+    AND {filter_scope['institution_id']}
+    AND {filter_scope['research_area_code']}
     """
 
     # Fetch the data
@@ -44,7 +45,9 @@ def query_trend_eutopia_collaboration(app_config: AppConfig, filter_scope: dict)
         SELECT DATE_PART('year', article_publication_dt)                              AS year,
                COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END) AS eutopian_collaborations
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1
         ORDER BY 1 ASC
     """
@@ -70,7 +73,9 @@ def query_breakdown_publications_by_institution(app_config: AppConfig, filter_sc
         SELECT institution_id              AS institution,
                COUNT(DISTINCT article_id) AS articles
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1
         ORDER BY 2 ASC
     """
@@ -98,7 +103,9 @@ def query_trend_articles_by_collaboration_type(app_config: AppConfig, filter_sco
                COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END)      AS external_collaborations,
                COUNT(DISTINCT CASE WHEN is_single_author_collaboration THEN article_id END) AS single_author_publications
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1
         ORDER BY 1 ASC
     """
@@ -125,28 +132,36 @@ def query_eutopia_collaboration_funnel(app_config: AppConfig, filter_scope: dict
              , 1                          AS stage_index
              , COUNT(DISTINCT article_id) AS count
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1, 2
         UNION ALL
         SELECT 'Collaborations'                                                                                     AS stage
              , 2                                                                                                    AS stage_index
              , COUNT(DISTINCT CASE WHEN is_external_collaboration or is_internal_collaboration THEN article_id END) AS count
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1, 2
         UNION ALL
         SELECT 'External Collaborations'                                               AS stage
              , 3                                                                       AS stage_index
              , COUNT(DISTINCT CASE WHEN is_external_collaboration THEN article_id END) AS count
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1, 2
         UNION ALL
         SELECT 'Eutopia Collaborations'                                               AS stage
              , 4                                                                      AS stage_index
              , COUNT(DISTINCT CASE WHEN is_eutopia_collaboration THEN article_id END) AS count
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         GROUP BY 1, 2
     """
 
@@ -182,7 +197,9 @@ def query_trend_new_collaborations(app_config: AppConfig, filter_scope: dict) ->
                               WHEN NOT has_new_author_collaboration
                                   AND NOT has_new_institution_collaboration THEN article_id END) AS existing_collaborations
         FROM fct_collaboration
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
+            AND {filter_scope['institution_id']}
+            AND {filter_scope['research_area_code']}
         AND NOT is_single_author_collaboration
         GROUP BY 1
         ORDER BY 1 ASC
@@ -207,12 +224,14 @@ def query_collaboration_novelty_index_distribution(app_config: AppConfig, filter
 
     query_str = f"""
         WITH articles AS (SELECT DISTINCT article_id
-                          FROM fct_collaboration)
+                          FROM fct_collaboration
+                          WHERE {filter_scope['institution_id']}
+                                AND {filter_scope['research_area_code']})
         SELECT cn.article_id,
                cn.collaboration_novelty_index
         FROM fct_article cn
                  INNER JOIN articles USING (article_id)
-        WHERE EXTRACT(YEAR FROM article_publication_dt) BETWEEN {filter_scope['publication-date']['min']} AND {filter_scope['publication-date']['max']}
+        WHERE {filter_scope['article_publication_dt']}
     """
 
     # Fetch the data

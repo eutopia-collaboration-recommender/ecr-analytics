@@ -38,15 +38,15 @@ def parse_filters(filters: list,
     """
     filter_scope = dict()
     for id, value in zip(filter_ids, filters):
-        if id['index'] == 'publication-date':
+        if id['index'] == 'article_publication_dt':
             filter_scope[
-                'publication-date'] = f'EXTRACT(YEAR FROM article_publication_dt) BETWEEN {value[0]} AND {value[1]}'
+                'article_publication_dt'] = f'EXTRACT(YEAR FROM article_publication_dt) BETWEEN {value[0]} AND {value[1]}'
         else:
             filter_name = id['index']
             if type(value) != list:
                 value = [value]
             filter_value = parse_filter(filter=value, filter_name=filter_name)
-            filter_scope[filter_name] = f'IN ({", ".join(filter_value)})' if filter_value else 'TRUE'
+            filter_scope[filter_name] = f'{filter_name} IN ({", ".join(filter_value)})' if filter_value else 'TRUE'
 
     return filter_scope
 
@@ -84,11 +84,12 @@ def get_dropdown_filter(app_config: AppConfig,
 
     if filter_value_name is None:
         filter_value_name = filter_name
+    filter_name_value_lower = filter_value_name.lower().replace(' ', '_')
     # Check if df is not empty and create dropdown options
     if not df.empty:
         options = [
             {'label': row[filter_name],
-             'value': json.dumps({'filter-name': filter_name_lower, 'filter-value': row[filter_value_name]})}
+             'value': json.dumps({'filter-name': filter_name_value_lower, 'filter-value': row[filter_value_name]})}
             for index, row in df.iterrows()
         ]
         # Set the first institution as the default value
@@ -101,7 +102,7 @@ def get_dropdown_filter(app_config: AppConfig,
         default_value = '/'
 
     return dcc.Dropdown(
-        id={'type': f'filter-{page_name}', 'index': filter_name_lower},
+        id={'type': f'filter-{page_name}', 'index': filter_name_value_lower},
         options=options,
         placeholder=f"Select an entry",
         value=default_value,
