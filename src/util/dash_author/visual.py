@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 
 from src.util.dash_author.query import (
     query_articles_by_keyword, query_articles_by_research_area, query_cards,
-    query_co_author_embeddings, query_published_articles
+    query_co_author_embeddings, query_published_articles, query_recommended_co_authors
 )
 from src.util.dash_common.app_config import AppConfig
 
@@ -248,7 +248,7 @@ def articles_by_breakdown(app_config: AppConfig,
 
 
 def author_recommendations(app_config: AppConfig,
-                           filter_scope: dict) -> dcc.Graph:
+                           filter_scope: dict) -> dash_table.DataTable | html.P:
     """
     Cluster co-authors using HDBSCAN and visualize the clusters using t-SNE
     :param app_config:
@@ -258,13 +258,86 @@ def author_recommendations(app_config: AppConfig,
     author_id = filter_scope['author_id']
     # Get author id in between "author_id in ('" and "')"
     author_id = author_id.split("'")[1]
+
     # Request recommendations from the recommendation engine
-    request_url = 'http://0.0.0.0:8080/predict/'
+    url = 'http://0.0.0.0:8080/predict/'
+
     data = dict(
         author_id=author_id
     )
-    response = requests.post(request_url, json=data)
 
-    print(response.json())
+    # Correctly define headers
+    headers = {
+        'Content-Type': 'application/json'
+    }
 
-    return None
+    # Properly serialize data as JSON
+    data = {
+        "author_id": author_id  # Match the example given in the cURL command
+    }
+    try:
+        # Use json parameter for automatic JSON serialization instead of data
+        response = requests.post(url=url, headers=headers, json=data)
+
+        if response.status_code == 200:
+            recommendations = response.json()
+
+            co_author_filter = f'author_id in {tuple(recommendations)}'
+
+            authors_df = query_recommended_co_authors(app_config=app_config, co_author_filter=co_author_filter)
+            authors_df['Index'] = authors_df.index + 1
+
+            return dash_table.DataTable(
+                data=authors_df.to_dict('records'),
+                columns=[
+                    {"name": "Index", "id": "Index"},
+                    {"name": "Author", "id": "Author"}
+                ],
+                style_table={
+                    'width': '100%',  # Ensure the table width is 100% of its container
+                    'overflowX': 'auto'  # Allow horizontal scrolling if needed
+                },
+                style_cell={
+                    'minWidth': '150px',
+                    'maxWidth': '80%',
+
+                    'fontFamily': 'Open Sans, sans-serif',
+                    'whiteSpace': 'normal',
+                    'backgroundColor': app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,  # Set cell background color
+                    'padding': '5px 5px 5px 5px',
+                    'border': 'none',
+                    'borderLeft': '1px solid lightgray',  # Add inner left border between columns
+                    'borderRight': '1px solid lightgray'  # Add inner right border between columns
+                },
+                style_header={
+                    'backgroundColor': app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,
+                    'fontWeight': 'bold',
+                    'padding': '5px 5px 5px 5px',
+                    'textAlign': 'left',
+                    'borderBottom': '1px solid lightgray'  # Add a bottom border for the header
+                },
+                style_data_conditional=[
+                    {
+                        'if': {'column_id': 'Article Title'},
+                        'textDecoration': 'none',
+                        'overflow': 'hidden',
+                        'textOverflow': 'ellipsis',
+                        'whiteSpace': 'nowrap',
+                        'maxWidth': '800px',
+                    },
+                ],
+                tooltip_data=[
+                    {
+                        column: {'value': str(value), 'type': 'markdown'}
+                        for column, value in row.items()
+                    } for row in authors_df.to_dict('records')
+                ],
+                tooltip_duration=None,  # Keeps the tooltip visible as long as the user hovers
+                page_action='native',  # Enable pagination
+                page_size=10,  # Number of rows per page
+                sort_action="native",
+                filter_action="native"
+            )
+
+    except requests.exceptions.ConnectionError as e:
+        return html.P('Recommendation engine is currently down. Please, try again later.')

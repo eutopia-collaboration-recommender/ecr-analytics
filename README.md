@@ -49,27 +49,6 @@ conda env create -f environment.yml
 conda activate ecr-analytics-conda
 ```
 
-### Running the analytical dashboard
-
-To run the analytical dashboard, you need to run the following command in the `src` directory:
-
-```bash
-python app.py
-```
-
-#### (optional) Caching the data using redis
-
-If you want to cache the data using Redis, you need to setup a Redis server. We've provided a `docker-compose.yaml` file
-for this purpose. You can run the following command to start the Redis server:
-
-```bash
-docker-compose up
-```
-
-This will store query results in Redis for 1 hour before fetching the data again, which results in faster loading times.
-
-<hr/>
-
 ## Notebooks
 
 We've provided a few Jupyter notebooks for data exploration, which can be found in the `notebooks` directory. The
@@ -94,3 +73,38 @@ a brief overview of the notebooks:
    an analysis testing whether new collaborations are driven by the search for expertise.
 8. [New collaborations are driven by experienced lead authors](src/notebooks/08_new_collaborations_are_driven_by_experienced_lead_authors.ipynb):
    an analysis testing whether new collaborations are driven by experienced lead authors.
+
+## Dashboard
+
+To run the analytical dashboard, you need to run the following command in the `src` directory:
+
+```bash
+python app.py
+```
+
+#### (optional) Caching the data using redis
+
+If you want to cache the data using Redis, you need to setup a Redis server. We've provided a `docker-compose.yaml` file
+for this purpose. You can run the following command to start the Redis server:
+
+```bash
+docker-compose up
+```
+
+This will store query results in Redis for 1 hour before fetching the data again, which results in faster loading times.
+
+<hr/>
+
+The analytical dashboard is built using Dash and provides insights into our data warehouse through two main tabs:
+
+1. **Overview:** provides an overview of the publication landscape in the EUTOPIA organization.
+2. **Author:** provides insights into research interest, streams and recommendations for new collaborations for a
+   specific author.
+
+### Overview page
+
+![Overview page](src/assets/report_figures/dash_overview_page.png)
+
+### Author page
+
+![Author page](src/assets/report_figures/dash_author_page.png)

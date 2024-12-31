@@ -188,3 +188,25 @@ def query_articles_by_keyword(app_config: AppConfig,
     # Turn column names from snake case to title case and replace underscores with spaces
     data.columns = cols_to_title(data.columns)
     return data
+
+
+def query_recommended_co_authors(app_config: AppConfig, co_author_filter: str) -> pd.DataFrame:
+    """
+    Get the recommended co-authors
+    :param co_author_filter: List of co-authors to filter by
+    :param app_config: The app_config.
+    :return: Recommended co-authors
+    """
+    query_str = f"""
+    SELECT author_name AS author
+    FROM dim_author
+    WHERE {co_author_filter}
+    """
+
+    # Fetch the data
+    data = redis_query(app_config=app_config,
+                       query_str=query_str)
+
+    # Turn column names from snake case to title case and replace underscores with spaces
+    data.columns = cols_to_title(data.columns)
+    return data

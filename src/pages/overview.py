@@ -58,7 +58,7 @@ def page_header():
         )
     ],
         fluid=True,
-        className="mt-4"
+        className="mt-4 m-1"
     )
 
 
@@ -75,43 +75,43 @@ def page_overview(filters: list, filter_ids: int) -> list:
                 className="gray-background-custom m-1"),
         dbc.Row(
             children=[
-                dbc.Col(
-                    trend_articles_by_collaboration_type(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(trend_articles_by_collaboration_type(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 ),
-                dbc.Col(
-                    breakdown_publications_by_institution(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(breakdown_publications_by_institution(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 )
             ]
         ),
         dbc.Row(
             children=[
-                dbc.Col(
-                    trend_eutopia_collaboration(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(trend_eutopia_collaboration(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 ),
-                dbc.Col(
-                    eutopia_collaboration_funnel(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(eutopia_collaboration_funnel(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 )
             ]
         ),
         dbc.Row(
             children=[
-                dbc.Col(
-                    trend_new_collaborations(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(trend_new_collaborations(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 ),
-                dbc.Col(
-                    collaboration_novelty_index_distribution(app_config=app_config, filter_scope=filter_scope),
-                    className="mt-4",
-                    width=6
+                dbc.Col(children=[
+                    dbc.Row(collaboration_novelty_index_distribution(app_config=app_config, filter_scope=filter_scope),
+                            className="mt-4 m-1")
+                ], width=6
                 )
             ]
         )
