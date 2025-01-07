@@ -82,6 +82,7 @@ def published_articles(app_config: AppConfig,
         data=published_articles_df.to_dict('records'),
         columns=[
             {"name": "Publication Year", "id": "Publication Year"},
+            {"name": "Research Area", "id": "Research Area"},
             {"name": "Article Title", "id": "Article Title", "presentation": "markdown"},
             {"name": "Citations", "id": "Citations"},
             {"name": "Collaboration Novelty Index", "id": "Collaboration Novelty Index"},
@@ -175,6 +176,20 @@ def co_author_clustering(app_config: AppConfig,
     co_author_embedding_df['t-SNE x'] = tsne_result[:, 0]
     co_author_embedding_df['t-SNE y'] = tsne_result[:, 1]
 
+    # Calculate the axis range
+    x_min = co_author_embedding_df['t-SNE x'].min()
+    x_max = co_author_embedding_df['t-SNE x'].max()
+    y_min = co_author_embedding_df['t-SNE y'].min()
+    y_max = co_author_embedding_df['t-SNE y'].max()
+
+    # Determine the overall range to make x and y axes equal
+    min_range = min(x_min, y_min)
+    max_range = max(x_max, y_max)
+
+    nticks = 4
+    tickvals = np.linspace(min_range, max_range, nticks)
+    tickvals = [round(val, 2) for val in tickvals]
+
     # Create an interactive Plotly scatter plot
     fig = px.scatter(
         co_author_embedding_df,
@@ -184,13 +199,18 @@ def co_author_clustering(app_config: AppConfig,
         hover_data=['Author Id', 'Author Name'],
         # color_continuous_scale=px.colors.qualitative.Prism,
     )
+
     fig.update_layout(
         font=dict(
             family='Open Sans, sans-serif'
         ),
         plot_bgcolor=app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,
         paper_bgcolor=app_config.config.DASHBOARD.COLORS.BACKGROUND_COLOR,
-        font_color=app_config.config.DASHBOARD.COLORS.TEXT_COLOR)
+        font_color=app_config.config.DASHBOARD.COLORS.TEXT_COLOR,
+        xaxis=dict(range=[min_range, max_range], scaleanchor="y", fixedrange=True, tickvals=tickvals),
+        yaxis=dict(range=[min_range, max_range], scaleanchor="x", fixedrange=True, tickvals=tickvals),
+        autosize=False,
+    )
 
     return dcc.Graph(figure=fig)
 

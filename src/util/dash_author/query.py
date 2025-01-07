@@ -60,21 +60,23 @@ def query_published_articles(app_config: AppConfig,
     :return: The published articles.
     """
     query_str = f"""
-        WITH filtered_data AS (
-            SELECT *
-            FROM fct_collaboration
-            WHERE {filter_scope['author_id']}
-                AND {filter_scope['article_publication_dt']})
+        WITH filtered_data AS (SELECT *
+                               FROM fct_collaboration
+                               WHERE {filter_scope['author_id']}
+                                 AND {filter_scope['article_publication_dt']})
         SELECT DISTINCT a.article_doi,
+                        ra.research_area_name                       AS research_area,
                         a.article_title,
-                        f.article_citation_count                    as citations,
+                        f.article_citation_count                    AS citations,
                         f.collaboration_novelty_index,
-                        DATE_PART('year', a.article_publication_dt) as publication_year
+                        DATE_PART('year', a.article_publication_dt) AS publication_year
         FROM filtered_data c
                  INNER JOIN dim_article a
                             ON c.article_id = a.article_id
                  INNER JOIN fct_article f
                             ON c.article_id = f.article_id
+                 INNER JOIN dim_research_area ra
+                            ON ra.research_area_code = f.research_area_code
         ORDER BY DATE_PART('year', a.article_publication_dt) DESC
     """
 
@@ -103,8 +105,7 @@ def query_co_author_embeddings(app_config: AppConfig,
              co_authors AS (SELECT DISTINCT c2.author_id
                             FROM filtered_data c1
                                      INNER JOIN fct_collaboration c2
-                                                ON c1.article_id = c2.article_id
-                                                    AND c1.author_id <> c2.author_id)
+                                                ON c1.article_id = c2.article_id)
         SELECT c.author_id,
                a.author_name,
                e.embedding_tensor_data::float8[] AS embedding_tensor_data
