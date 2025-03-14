@@ -282,9 +282,6 @@ def author_recommendations(app_config: AppConfig,
     # Request recommendations from the recommendation engine
     url = 'http://0.0.0.0:8080/predict/'
 
-    data = dict(
-        author_id=author_id
-    )
 
     # Correctly define headers
     headers = {
@@ -305,6 +302,7 @@ def author_recommendations(app_config: AppConfig,
             co_author_filter = f'author_id in {tuple(recommendations)}'
 
             authors_df = query_recommended_co_authors(app_config=app_config, co_author_filter=co_author_filter)
+            print(recommendations)
             authors_df['Index'] = authors_df.index + 1
 
             return dash_table.DataTable(

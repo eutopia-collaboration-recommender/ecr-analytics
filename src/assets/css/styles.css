@@ -39,3 +39,7 @@ body {
     border: none !important;
 }
 
+
+.border-white {
+    border: 4px solid white !important;
+}

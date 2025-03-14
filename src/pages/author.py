@@ -121,16 +121,16 @@ def page_author(filters: list, filter_ids: list) -> dbc.Container:
         ], className="m-1"),
         dbc.Row(children=[
             dbc.Col(children=[
-                dbc.Row(children=[], id='research-streams-clustering', className="gray-background-custom m-1")
-            ], width=5),
+                dbc.Row(children=[], id='research-streams-clustering')
+            ], width=5, className="gray-background-custom border-white"),
             dbc.Col(children=[
-                dbc.Row(children=[], id='author-research-direction', className="gray-background-custom m-1")
-            ], width=4),
+                dbc.Row(children=[], id='author-research-direction')
+            ], width=4, className="gray-background-custom border-white"),
             dbc.Col(children=[
                 dbc.Row(children=author_recommendations(app_config=app_config, filter_scope=filter_scope),
-                        id='author-recommendations', className="gray-background-custom m-1")
-            ], width=3)
-        ], className="m-1"),
+                        id='author-recommendations')
+            ], width=3, className="gray-background-custom border-white")
+        ], className="m-1 mb-2"),
         dbc.Row(children=[
             html.H6("PUBLISHED ARTICLES", className="text-left p-2 font-italic"),
             published_articles(app_config=app_config, filter_scope=filter_scope)
